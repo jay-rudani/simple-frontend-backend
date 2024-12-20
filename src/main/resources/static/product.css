@@ -1,0 +1,172 @@
+.container {
+    max-width: 1400px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.header-card {
+    margin-bottom: 2rem;
+}
+
+.text-center {
+    text-align: center;
+    margin: 0;
+}
+
+.refresh-button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+.products-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+.products-table th,
+.products-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--sl-color-neutral-200);
+}
+
+.products-table th {
+    background-color: var(--sl-color-neutral-50);
+    font-weight: var(--sl-font-weight-semibold);
+}
+
+.product-details,
+.variants-details {
+    width: 100%;
+}
+
+.details-content {
+    padding: 1rem 0;
+    font-size: 0.9rem;
+}
+
+.variants-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.variant-card {
+    --padding: 1rem;
+}
+
+.variant-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.options {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.sku {
+    font-size: 0.9rem;
+    color: var(--sl-color-neutral-500);
+}
+
+.htmx-indicator {
+    opacity: 0;
+    transition: opacity 200ms ease-in;
+}
+
+.htmx-request .htmx-indicator {
+    opacity: 1;
+    display: inline-block !important;
+}
+
+.htmx-request.htmx-indicator {
+    opacity: 1;
+    display: inline-block !important;
+}
+
+.form-card {
+    margin-bottom: 2rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.variant-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+}
+
+.variant-section {
+    margin: 1rem 0;
+}
+
+sl-input::part(form-control) {
+    margin-bottom: 0;
+}
+
+sl-input::part(form-control-label) {
+    font-weight: var(--sl-font-weight-semibold);
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.variants-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.variant-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.variant-form {
+    margin-bottom: 1rem;
+}
+
+.variant-form:last-child {
+    margin-bottom: 0;
+}
+
+.variant-form h4 {
+    margin: 0;
+}
+
+.remove-variant-btn {
+    --sl-color-danger-600: #dc3545;
+}
+
+#variants-container {
+    margin: 1.5rem 0;
+}

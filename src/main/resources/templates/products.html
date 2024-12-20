@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <!-- Page Title -->
+    <title>Product Dashboard</title>
+
+    <!-- HTMX for dynamic content updates -->
+    <script src="https://unpkg.com/htmx.org@2.0.4"
+            integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
+            crossorigin="anonymous"></script>
+
+    <!-- Shoelace Stylesheet for UI components -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/themes/light.css"/>
+    <!-- Shoelace Autoloader for UI components -->
+    <script type="module"
+            src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/shoelace-autoloader.js"></script>
+
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="/product.css">
+</head>
+<body>
+
+<!-- Main Container -->
+<div class="container">
+
+    <!-- Header Card -->
+    <sl-card class="header-card">
+
+        <!-- Title of the Dashboard -->
+        <h1 slot="header" class="text-center">Product Dashboard</h1>
+
+        <!-- Button to Refresh Products List -->
+        <div class="refresh-button-container">
+            <sl-button
+                    variant="primary"
+                    hx-get="/test/table"
+                    hx-target="#products-table"
+                    hx-swap="outerHTML"
+                    hx-indicator="#spinner">
+                <sl-icon slot="prefix" name="arrow-clockwise"></sl-icon>
+                Refresh Products
+            </sl-button>
+
+            <!-- Spinner that appears while loading data -->
+            <sl-spinner
+                    id="spinner"
+                    style="display: none;"
+                    class="htmx-indicator">
+            </sl-spinner>
+        </div>
+    </sl-card>
+
+    <!-- Products Table Section -->
+    <div id="products-table" th:fragment="products-table">
+        <sl-card>
+            <div class="table-container">
+                <table class="products-table">
+                    <thead>
+
+                    <!-- Table Headers -->
+                    <tr>
+                        <th>Product</th>
+                        <th>Vendor</th>
+                        <th>Type</th>
+                        <th>Last Updated</th>
+                        <th>Variants</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    <!-- Iterate over each product using Thymeleaf -->
+                    <tr th:each="product : ${products}">
+                        <td>
+                            <sl-details class="product-details">
+
+                                <!-- Product title that expands to show more details -->
+                                <div slot="summary" th:text="${product.title}"></div>
+                                <div class="details-content">
+                                    <p><strong>ID:</strong> <span th:text="${product.id}"></span></p>
+                                    <p><strong>Created:</strong> <span
+                                            th:text="${product.createdAt}"></span>
+                                    </p>
+                                </div>
+                            </sl-details>
+                        </td>
+                        <td th:text="${product.vendor}"></td>
+                        <td th:text="${product.productType}"></td>
+                        <td th:text="${product.updatedAt}"></td>
+                        <td>
+                            <sl-details class="variants-details">
+                                <div slot="summary">
+
+                                    <!-- Badge displaying the number of variants -->
+                                    <sl-badge variant="neutral"
+                                              th:text="${product.variants.size() + ' variants'}"/>
+                                </div>
+                                <div class="variants-grid">
+
+                                    <!-- Iterate over product variants -->
+                                    <sl-card th:each="variant : ${product.variants}" class="variant-card">
+                                        <strong th:text="${variant.title}"></strong>
+                                        <div class="variant-info">
+                                            <p>
+                                                <sl-format-number
+                                                        th:value="${variant.price}"
+                                                        type="currency"
+                                                        currency="USD">
+                                                </sl-format-number>
+                                            </p>
+                                            <p class="sku" th:text="${'SKU: ' + variant.sku}"></p>
+                                            <div class="options">
+
+                                                <!-- Option badges displayed conditionally -->
+                                                <sl-badge th:if="${variant.option1}"
+                                                          variant="neutral"
+                                                          th:text="${variant.option1}">
+                                                </sl-badge>
+                                                <sl-badge th:if="${variant.option2}"
+                                                          variant="neutral"
+                                                          th:text="${variant.option2}">
+                                                </sl-badge>
+                                            </div>
+
+                                            <!-- Availability badge (In Stock / Out of Stock) -->
+                                            <sl-badge
+                                                    th:variant="${variant.available ? 'success' : 'danger'}"
+                                                    th:text="${variant.available ? 'In Stock' : 'Out of Stock'}">
+                                            </sl-badge>
+                                        </div>
+                                    </sl-card>
+                                </div>
+                            </sl-details>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </sl-card>
+    </div>
+</div>
+
+<!-- Add New Product Form -->
+<div class="container">
+
+    <!-- Add Product Form -->
+    <sl-card class="form-card">
+        <div slot="header">
+            <h2>Add New Product</h2>
+        </div>
+
+        <!-- hx-post: URL to submit the form data -->
+        <!-- hx-target: Target for updating the product table -->
+        <!-- hx-swap: Replace the outer HTML of the target -->
+        <!-- hx-swap: Show spinner during form submission -->
+        <form id="productForm"
+              hx-post="/test/product"
+              hx-target="#products-table"
+              hx-swap="outerHTML"
+              hx-indicator="#form-spinner">
+
+            <div class="form-grid">
+
+                <!-- Product Title Input -->
+                <div class="form-group">
+                    <sl-input name="title"
+                              label="Product Title"
+                              required>
+                    </sl-input>
+                </div>
+
+                <!-- Vendor Input -->
+                <div class="form-group">
+                    <sl-input name="vendor"
+                              label="Vendor"
+                              required>
+                    </sl-input>
+                </div>
+
+                <!-- Product Type Input -->
+                <div class="form-group">
+                    <sl-input name="type"
+                              label="Product Type"
+                              required>
+                    </sl-input>
+                </div>
+            </div>
+
+            <sl-divider></sl-divider>
+
+            <!-- Variants Section -->
+            <div id="variants-container">
+                <div class="variants-header">
+                    <h3>Variants</h3>
+
+                    <!-- Button to add new variant -->
+                    <sl-button type="button" variant="primary" size="small" onclick="addVariant()">
+                        <sl-icon slot="prefix" name="plus-circle"></sl-icon>
+                        Add Variant
+                    </sl-button>
+                </div>
+
+                <div id="variants-list">
+
+                    <!-- Initial variant input form -->
+                    <div class="variant-form" data-variant-index="0">
+                        <sl-card>
+                            <div class="variant-header">
+                                <h4>Variant #1</h4>
+                                <sl-button type="button"
+                                           variant="danger"
+                                           size="small"
+                                           onclick="removeVariant(this)"
+                                           class="remove-variant-btn">
+                                    <sl-icon name="trash"></sl-icon>
+                                </sl-button>
+                            </div>
+
+                            <!-- Variant Fields (Title, SKU, Price, etc.) -->
+                            <div class="variant-form-grid">
+                                <sl-input name="variants[0].title"
+                                          label="Variant Title"
+                                          required>
+                                </sl-input>
+
+                                <sl-input name="variants[0].sku"
+                                          label="SKU"
+                                          required>
+                                </sl-input>
+
+                                <sl-input name="variants[0].price"
+                                          label="Price"
+                                          type="number"
+                                          min="0"
+                                          step="0.01"
+                                          required>
+                                </sl-input>
+
+                                <sl-input name="variants[0].option1"
+                                          label="Option 1">
+                                </sl-input>
+
+                                <sl-input name="variants[0].option2"
+                                          label="Option 2">
+                                </sl-input>
+
+                                <sl-switch
+                                        name="variants[0].available"
+                                        label="Available"
+                                        value="true">
+                                </sl-switch>
+                            </div>
+                        </sl-card>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="form-actions">
+                <sl-button type="submit" variant="primary">
+                    Add Product
+                    <sl-spinner
+                            id="form-spinner"
+                            style="display: none;"
+                            slot="suffix"
+                            class="htmx-indicator">
+                    </sl-spinner>
+                </sl-button>
+            </div>
+        </form>
+    </sl-card>
+</div>
+
+<!-- JavaScript to handle dynamic behavior -->
+<script>
+    let variantCounter = 1;
+
+    // Function to add a new variant form
+    function addVariant() {
+        const variantsList = document.getElementById('variants-list');
+        const newIndex = variantCounter++;
+
+        // Template for a new variant form
+        const variantTemplate = `
+            <div class="variant-form" data-variant-index="${newIndex}">
+                <sl-card>
+                    <div class="variant-header">
+                        <h4>Variant #${newIndex + 1}</h4>
+                        <sl-button type="button"
+                                  variant="danger"
+                                  size="small"
+                                  onclick="removeVariant(this)"
+                                  class="remove-variant-btn">
+                            <sl-icon name="trash"></sl-icon>
+                        </sl-button>
+                    </div>
+
+                    <div class="variant-form-grid">
+                        <sl-input name="variants[${newIndex}].title"
+                                 label="Variant Title"
+                                 required>
+                        </sl-input>
+
+                        <sl-input name="variants[${newIndex}].sku"
+                                 label="SKU"
+                                 required>
+                        </sl-input>
+
+                        <sl-input name="variants[${newIndex}].price"
+                                 label="Price"
+                                 type="number"
+                                 min="0"
+                                 step="0.01"
+                                 required>
+                        </sl-input>
+
+                        <sl-input name="variants[${newIndex}].option1"
+                                 label="Option 1">
+                        </sl-input>
+
+                        <sl-input name="variants[${newIndex}].option2"
+                                 label="Option 2">
+                        </sl-input>
+
+                        <sl-switch
+                            name="variants[${newIndex}].available"
+                            label="Available"
+                            value="true">
+                        </sl-switch>
+                    </div>
+                </sl-card>
+            </div>
+        `;
+
+        // Add the new variant form to the list
+        variantsList.insertAdjacentHTML('beforeend', variantTemplate);
+    }
+
+    // Function to remove a variant form
+    function removeVariant(button) {
+        const variantForm = button.closest('.variant-form');
+        const variantsList = document.getElementById('variants-list');
+
+        // Don't remove if it's the last variant
+        if (variantsList.children.length > 1) {
+            variantForm.remove();
+            updateVariantNumbers();
+        } else {
+
+            // Show error message if there is only one variant
+            const alert = Object.assign(document.createElement('sl-alert'), {
+                variant: 'danger',
+                closable: true,
+                duration: 3000,
+                innerHTML: `
+                    <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
+                    At least one variant is required
+                `
+            });
+
+            document.body.append(alert);
+            alert.toast();
+        }
+    }
+
+    // Function to update the variant numbers after adding or removing a variant
+    function updateVariantNumbers() {
+        const variants = document.querySelectorAll('.variant-form');
+        variants.forEach((variant, index) => {
+            variant.querySelector('h4').textContent = `Variant #${index + 1}`;
+        });
+    }
+
+    // Clear form after successful submission and reset variant counter
+    document.body.addEventListener('htmx:afterSwap', function (evt) {
+        if (evt.detail.target.id === 'products-table') {
+            document.getElementById('productForm').reset();
+
+            // Reset variants to just one
+            const variantsList = document.getElementById('variants-list');
+            const firstVariant = variantsList.firstElementChild;
+            while (variantsList.children.length > 1) {
+                variantsList.lastElementChild.remove();
+            }
+            variantCounter = 1;
+            updateVariantNumbers();
+        }
+    });
+</script>
+</body>
+</html>
