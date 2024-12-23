@@ -64,9 +64,9 @@ class ProductService(
                         val productId = product["id"].asLong()
                         jdbcClient.sql(
                             """
-                        INSERT INTO products (id, title, vendor, type, created_at, updated_at)
-                        VALUES (?, ?, ?, ?, ?, ?)
-                        """
+                            INSERT INTO products (id, title, vendor, type, created_at, updated_at)
+                            VALUES (?, ?, ?, ?, ?, ?)
+                            """.trimIndent()
                         )
                             .params(
                                 productId,
@@ -83,12 +83,12 @@ class ProductService(
                         product["variants"].forEach { variantNode ->
                             jdbcClient.sql(
                                 """
-                            INSERT INTO variants (
-                                id, product_id, title, sku, price, available,
-                                option1, option2, created_at, updated_at
-                            )
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                            """
+                                INSERT INTO variants (
+                                    id, product_id, title, sku, price, available,
+                                    option1, option2, created_at, updated_at
+                                )
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                """.trimIndent()
                             )
                                 .params(
                                     variantNode["id"].asLong(),
@@ -133,7 +133,7 @@ class ProductService(
             """
             SELECT id, title, vendor, type, created_at, updated_at 
             FROM products
-        """
+            """.trimIndent()
         )
             .query { rs, _ ->
                 Product(
@@ -155,7 +155,7 @@ class ProductService(
                        option1, option2, created_at, updated_at
                 FROM variants 
                 WHERE product_id = ?
-                """
+                """.trimIndent()
             )
                 .param(product.id)
                 .query { rs, _ ->
@@ -200,7 +200,7 @@ class ProductService(
             """
             INSERT INTO products (id, title, vendor, type, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?)
-            """
+            """.trimIndent()
         )
             .params(
                 productId,
@@ -222,7 +222,7 @@ class ProductService(
                     option1, option2, created_at, updated_at
                 )
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """
+            """.trimIndent()
             )
                 .params(
                     variantId,
