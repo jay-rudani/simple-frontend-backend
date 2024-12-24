@@ -1,5 +1,7 @@
 package com.example.dto
 
+import java.time.LocalDateTime
+
 /**
  * Data Transfer Object (DTO) for variant details of a product.
  *
@@ -16,10 +18,14 @@ package com.example.dto
  * @property option2 The second option associated with the variant (e.g., material, style).
  */
 data class VariantDto(
+    val id: Long = 0,
+    val productId: Long = 0,
     val title: String = "",
     val sku: String = "",
     val price: Double = 0.0,
     val available: Boolean = false,
     val option1: String = "",
-    val option2: String = ""
+    val option2: String = "",
+    val createdAt: LocalDateTime = LocalDateTime.now(),
+    val updatedAt: LocalDateTime = LocalDateTime.now()
 )

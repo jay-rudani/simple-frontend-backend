@@ -1,52 +1,58 @@
 package com.example.service
 
+import com.example.dao.ProductDAO
 import com.example.dto.ProductDto
+import com.example.dto.VariantDto
 import com.example.model.Product
-import com.example.model.Variant
 import com.fasterxml.jackson.databind.JsonNode
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 import java.time.LocalDateTime
-import java.util.*
 
 /**
- * Service class responsible for managing product-related operations.
+ * Service class responsible for managing products in the application.
  *
- * This service fetches products from an external API, saves them to the database,
- * and provides methods to retrieve products and save new ones.
- * It also includes a scheduled task to fetch and store products periodically.
+ * This class contains methods to fetch, save, and retrieve products. It includes a scheduled task
+ * to fetch and save products from an external API if no products exist in the database.
  *
- * @param restTemplate The RestTemplate used to make API calls to fetch products.
- * @param jdbcClient The JdbcClient used to interact with the database.
+ * The methods include:
+ * - `fetchAndSaveProducts()`: Fetches product data from an external API and saves the first 10 products.
+ * - `getAllProducts()`: Retrieves all products stored in the database.
+ * - `saveProduct()`: Saves a given product to the database.
+ *
+ * The class also interacts with `ProductDAO` for database operations and uses `RestTemplate`
+ * for fetching data from the external API.
+ *
+ * @param restTemplate The RestTemplate used to fetch data from external APIs.
+ * @param productDAO The DAO responsible for product-related database operations.
  */
 @Service
 @EnableScheduling
 class ProductService(
-    val restTemplate: RestTemplate,
-    val jdbcClient: JdbcClient
+    private val restTemplate: RestTemplate,
+    private val productDAO: ProductDAO
 ) {
     // Logger to log important events and errors
     val logger: Logger = LoggerFactory.getLogger(ProductService::class.java)
 
     /**
-     * Scheduled task that fetches and saves products from an external API if no products exist in the database.
+     * Scheduled task to fetch and save products from an external API.
      *
-     * This method is executed at a fixed interval and performs an initial data fetch from an external API
-     * when no products are found in the database. It inserts both product and variant data into the database.
+     * If no products exist in the database, it fetches product data from the API and
+     * processes the first 10 products to save them along with their variants.
+     *
+     * This method is annotated with `@Scheduled` to run periodically, starting immediately.
      */
     @Scheduled(initialDelay = 0)
     fun fetchAndSaveProducts() {
         try {
 
             // Check if products already exist in the database
-            val productCount = jdbcClient.sql("SELECT COUNT(*) FROM products")
-                .query(Int::class.java)
-                .single()
+            val productCount = productDAO.getCountOfProducts()
 
             if (productCount == 0) {
                 logger.info("No products found in database. Starting initial data fetch...")
@@ -60,50 +66,42 @@ class ProductService(
                     products.take(10).forEach { product ->
                         val now = LocalDateTime.now()
 
-                        // Insert product data into the database
+                        // Product id for variants
                         val productId = product["id"].asLong()
-                        jdbcClient.sql(
-                            """
-                            INSERT INTO products (id, title, vendor, type, created_at, updated_at)
-                            VALUES (?, ?, ?, ?, ?, ?)
-                            """.trimIndent()
-                        )
-                            .params(
-                                productId,
-                                product["title"].asText(),
-                                product["vendor"].asText(),
-                                product["product_type"].asText(),
+
+                        // Create list of variants for a product
+                        val listOfVariantDtos = mutableListOf(VariantDto())
+
+                        // Adding variants to the list
+                        product["variants"].forEach { variantNode ->
+
+                            val variantDto = VariantDto(
+                                id = variantNode["id"].asLong(),
+                                productId = productId,
+                                title = variantNode["title"].asText(),
+                                sku = variantNode["sku"].asText(),
+                                price = variantNode["price"].asDouble(),
+                                available = variantNode["available"].asBoolean(),
+                                option1 = variantNode["option1"].asText(),
+                                option2 = variantNode["option2"].asText(),
                                 now,
                                 now
                             )
-                            .update()
-                        logger.info("Product saved successfully")
-
-                        // Insert variant data for each product
-                        product["variants"].forEach { variantNode ->
-                            jdbcClient.sql(
-                                """
-                                INSERT INTO variants (
-                                    id, product_id, title, sku, price, available,
-                                    option1, option2, created_at, updated_at
-                                )
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                                """.trimIndent()
-                            )
-                                .params(
-                                    variantNode["id"].asLong(),
-                                    productId,
-                                    variantNode["title"].asText(),
-                                    variantNode["sku"].asText(),
-                                    variantNode["price"].asDouble(),
-                                    variantNode["available"].asBoolean(),
-                                    variantNode["option1"].asText(),
-                                    variantNode["option2"].asText(),
-                                    now,
-                                    now
-                                )
-                                .update()
+                            listOfVariantDtos.add(variantDto)
                         }
+
+                        // Create product dto to save
+                        val productDto = ProductDto(
+                            id = productId,
+                            title = product["title"].asText(),
+                            vendor = product["vendor"].asText(),
+                            type = product["product_type"].asText(),
+                            listOfVariantDtos,
+                            now,
+                            now
+                        )
+                        productDAO.saveProduct(productDto)
+
                         logger.info("Product variants saved successfully")
                     }
                 }
@@ -116,130 +114,29 @@ class ProductService(
     }
 
     /**
-     * Retrieves all products from the database, including their associated variants.
+     * Retrieves all the products from the database.
      *
-     * This method first retrieves all products from the `products` table and then fetches
-     * the variants for each product from the `variants` table. The resulting product list
-     * is returned with their associated variants.
-     *
-     * @return A list of products with their variants.
+     * @return A list of all products.
      */
     fun getAllProducts(): List<Product> {
 
-        logger.info("Getting all products...")
+        logger.info("Service Layer:: Executing getAllProducts()")
 
-        // Get all products from the database
-        val products = jdbcClient.sql(
-            """
-            SELECT id, title, vendor, type, created_at, updated_at 
-            FROM products
-            """.trimIndent()
-        )
-            .query { rs, _ ->
-                Product(
-                    id = rs.getLong("id"),
-                    title = rs.getString("title"),
-                    vendor = rs.getString("vendor"),
-                    productType = rs.getString("type"),
-                    createdAt = rs.getTimestamp("created_at"),
-                    updatedAt = rs.getTimestamp("updated_at")
-                )
-            }
-            .list()
-
-        // For each product, get its associated variants
-        return products.map { product ->
-            val variants = jdbcClient.sql(
-                """
-                SELECT id, product_id, title, sku, price, available, 
-                       option1, option2, created_at, updated_at
-                FROM variants 
-                WHERE product_id = ?
-                """.trimIndent()
-            )
-                .param(product.id)
-                .query { rs, _ ->
-                    Variant(
-                        id = rs.getLong("id"),
-                        productId = rs.getLong("product_id"),
-                        title = rs.getString("title"),
-                        sku = rs.getString("sku"),
-                        price = rs.getDouble("price"),
-                        available = rs.getBoolean("available"),
-                        option1 = rs.getString("option1"),
-                        option2 = rs.getString("option2"),
-                        createdAt = rs.getTimestamp("created_at"),
-                        updatedAt = rs.getTimestamp("updated_at")
-                    )
-                }
-                .list()
-
-            // Return product with its associated variants
-            product.copy(variants = variants)
-        }
+        // Calling ProductDAO method to get all products
+        return productDAO.getAllProducts()
     }
 
     /**
-     * Saves a new product and its variants into the database.
+     * Saves the given product information into the database.
      *
-     * This method inserts a new product into the `products` table and then inserts its variants
-     * into the `variants` table. A new product ID is generated based on the current system time
-     * and variants are also assigned unique IDs.
-     *
-     * @param productDto The product data transfer object containing product and variant details.
-     * @return The ID of the newly created product.
+     * @param productDto The data transfer object containing product details to be saved.
+     * @return The unique identifier (ID) of the saved product.
      */
     fun saveProduct(productDto: ProductDto): Long {
-        val now = LocalDateTime.now()
 
-        // Generate a new product ID
-        val productId = System.currentTimeMillis() + Random().nextInt(1000)
+        logger.info("Service Layer:: Executing saveProduct(productDto)")
 
-        // Insert product into the database
-        jdbcClient.sql(
-            """
-            INSERT INTO products (id, title, vendor, type, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?)
-            """.trimIndent()
-        )
-            .params(
-                productId,
-                productDto.title,
-                productDto.vendor,
-                productDto.type,
-                now,
-                now
-            )
-            .update()
-
-        // Insert each variant associated with the product into the database
-        productDto.variants.forEach { variant ->
-            val variantId = System.currentTimeMillis() + Random().nextInt(1000)
-            jdbcClient.sql(
-                """
-                INSERT INTO variants (
-                    id, product_id, title, sku, price, available,
-                    option1, option2, created_at, updated_at
-                )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """.trimIndent()
-            )
-                .params(
-                    variantId,
-                    productId,
-                    variant.title,
-                    variant.sku,
-                    variant.price,
-                    variant.available,
-                    variant.option1,
-                    variant.option2,
-                    now,
-                    now
-                )
-                .update()
-        }
-
-        // Return the newly created product ID
-        return productId
+        // Calling ProductDAO method to get all products
+        return productDAO.saveProduct(productDto)
     }
 }
