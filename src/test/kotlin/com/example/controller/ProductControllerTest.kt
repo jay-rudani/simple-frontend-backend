@@ -82,7 +82,7 @@ class ProductControllerTest {
     @Test
     fun `addProduct should save product and return updated products table fragment`() {
         // Arrange: Mock input DTO and service responses
-        val productDto = ProductDto("Product 3", "Vendor C", "Type C")
+        val productDto = ProductDto(1L, "Product 3", "Vendor C", "Type C")
         val updatedProducts = listOf(
             Product(
                 1L,
