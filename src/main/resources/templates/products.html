@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <!-- Page Title -->
-    <title>Product Dashboard</title>
+    <title>Simple Frontend + Backend Integration</title>
 
     <!-- HTMX for dynamic content updates -->
     <script src="https://unpkg.com/htmx.org@2.0.4"
@@ -19,17 +19,18 @@
     <link rel="stylesheet" href="/product.css">
 </head>
 <body>
+<!-- Main Header -->
+<header class="main-header">
+    <div class="header-content">
+        <h1 class="header-title">Simple Frontend + Backend Integration</h1>
+    </div>
+</header>
 
 <!-- Main Container -->
 <div class="container">
 
     <!-- Header Card -->
     <sl-card class="header-card">
-
-        <!-- Title of the Dashboard -->
-        <h1 slot="header" class="text-center">Product Dashboard</h1>
-
-        <!-- Button to Refresh Products List -->
         <div class="refresh-button-container">
             <sl-button
                     variant="primary"
@@ -40,13 +41,7 @@
                 <sl-icon slot="prefix" name="arrow-clockwise"></sl-icon>
                 Refresh Products
             </sl-button>
-
-            <!-- Spinner that appears while loading data -->
-            <sl-spinner
-                    id="spinner"
-                    style="display: none;"
-                    class="htmx-indicator">
-            </sl-spinner>
+            <sl-spinner id="spinner" style="display: none;" class="htmx-indicator"></sl-spinner>
         </div>
     </sl-card>
 
