@@ -11,6 +11,36 @@ body {
     color: #333;
 }
 
+#products-table sl-card,
+.variant-form sl-card,
+.header-card
+{
+    width: 100%;
+}
+.variants-grid
+{
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0px -10px;
+
+}
+.variants-grid sl-card
+{
+    width: 45% !important;
+    margin: 10px 10px;
+}
+.input--standard.input--focused:not(.input--disabled)
+{
+    box-shadow: none !important;
+    border: 1px solid #2563eb;
+}
+.switch-box
+{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 /* Header styles */
 .main-header {
     background-color: #2563eb;
@@ -81,9 +111,9 @@ sl-card {
 /* Button styles */
 .refresh-button-container {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     gap: 1rem;
-    margin: 1rem 0;
+    align-items: center;
 }
 
 sl-button::part(base) {
@@ -135,6 +165,10 @@ sl-badge::part(base) {
     padding: 0.5rem;
     background-color: #f8fafc;
     border-radius: 4px;
+}
+.form-card
+{
+    width: 100%;
 }
 
 /* Spinner styles */
@@ -294,3 +328,4 @@ details.variants-details[open] summary {
     background-color: #fee2e2;
     color: #991b1b;
 }
+

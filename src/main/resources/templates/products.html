@@ -32,6 +32,7 @@
     <!-- Header Card -->
     <sl-card class="header-card">
         <div class="refresh-button-container">
+            <h4>Refresh Products</h4>
             <sl-button
                     variant="primary"
                     hx-get="/test/table"
@@ -238,11 +239,14 @@
                                           label="Option 2">
                                 </sl-input>
 
-                                <sl-switch
-                                        name="variants[0].available"
-                                        label="Available"
-                                        value="true">
-                                </sl-switch>
+                                <div class="switch-box">
+                                    <label>Available</label>
+                                    <sl-switch
+                                            name="variants[0].available"
+                                            label="Available"
+                                            value="true">
+                                    </sl-switch>
+                                </div>
                             </div>
                         </sl-card>
                     </div>
@@ -316,11 +320,14 @@
                                  label="Option 2">
                         </sl-input>
 
+                       <div class="switch-box">
+                        <label>Available</label>
                         <sl-switch
                             name="variants[${newIndex}].available"
                             label="Available"
                             value="true">
                         </sl-switch>
+                       </div>
                     </div>
                 </sl-card>
             </div>
