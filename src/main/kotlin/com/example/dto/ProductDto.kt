@@ -1,6 +1,6 @@
 package com.example.dto
 
-import java.time.LocalDateTime
+import java.sql.Timestamp
 
 /**
  * Data Transfer Object (DTO) for product details.
@@ -20,6 +20,6 @@ data class ProductDto(
     val vendor: String = "",
     val type: String = "",
     val variants: List<VariantDto> = listOf(VariantDto()),
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-    val updatedAt: LocalDateTime = LocalDateTime.now()
+    val createdAt: Timestamp = Timestamp(System.currentTimeMillis()),
+    val updatedAt: Timestamp = Timestamp(System.currentTimeMillis())
 )

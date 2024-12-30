@@ -3,7 +3,6 @@ package com.example.service
 import com.example.dao.ProductDAO
 import com.example.dto.ProductDto
 import com.example.dto.VariantDto
-import com.example.model.Product
 import com.fasterxml.jackson.databind.JsonNode
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -11,7 +10,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
-import java.time.LocalDateTime
+import java.sql.Timestamp
 
 /**
  * Service class responsible for managing products in the application.
@@ -64,13 +63,13 @@ class ProductService(
 
                     // Process and save the first 10 products
                     products.take(10).forEach { product ->
-                        val now = LocalDateTime.now()
+                        val now = Timestamp(System.currentTimeMillis())
 
                         // Product id for variants
                         val productId = product["id"].asLong()
 
                         // Create list of variants for a product
-                        val listOfVariantDtos = mutableListOf(VariantDto())
+                        val listOfVariantDtos = mutableListOf<VariantDto>()
 
                         // Adding variants to the list
                         product["variants"].forEach { variantNode ->
@@ -118,7 +117,7 @@ class ProductService(
      *
      * @return A list of all products.
      */
-    fun getAllProducts(): List<Product> {
+    fun getAllProducts(): List<ProductDto> {
 
         logger.info("Service Layer:: Executing getAllProducts()")
 

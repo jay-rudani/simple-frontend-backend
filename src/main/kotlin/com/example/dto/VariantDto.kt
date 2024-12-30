@@ -1,6 +1,6 @@
 package com.example.dto
 
-import java.time.LocalDateTime
+import java.sql.Timestamp
 
 /**
  * Data Transfer Object (DTO) for variant details of a product.
@@ -26,6 +26,6 @@ data class VariantDto(
     val available: Boolean = false,
     val option1: String = "",
     val option2: String = "",
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-    val updatedAt: LocalDateTime = LocalDateTime.now()
+    val createdAt: Timestamp = Timestamp(System.currentTimeMillis()),
+    val updatedAt: Timestamp = Timestamp(System.currentTimeMillis())
 )

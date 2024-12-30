@@ -4,8 +4,7 @@ package com.example.dao
 
 import com.example.constants.QueryConstants
 import com.example.dto.ProductDto
-import com.example.model.Product
-import com.example.model.Variant
+import com.example.dto.VariantDto
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
@@ -41,7 +40,7 @@ class ProductDAO(
      *
      * @return A list of all products with their associated variants.
      */
-    fun getAllProducts(): List<Product> {
+    fun getAllProducts(): List<ProductDto> {
 
         logger.info("DAO Layer:: Executing getAllProducts()")
 
@@ -50,11 +49,11 @@ class ProductDAO(
             QueryConstants.GET_ALL_PRODUCTS
         )
             .query { rs, _ ->
-                Product(
+                ProductDto(
                     id = rs.getLong("id"),
                     title = rs.getString("title"),
                     vendor = rs.getString("vendor"),
-                    productType = rs.getString("type"),
+                    type = rs.getString("type"),
                     createdAt = rs.getTimestamp("created_at"),
                     updatedAt = rs.getTimestamp("updated_at")
                 )
@@ -79,7 +78,7 @@ class ProductDAO(
             )
                 .paramSource(params)
                 .query { rs, _ ->
-                    Variant(
+                    VariantDto(
                         id = rs.getLong("id"),
                         productId = rs.getLong("product_id"),
                         title = rs.getString("title"),
@@ -93,8 +92,6 @@ class ProductDAO(
                     )
                 }
                 .list()
-
-            logger.info("getAllProducts():: Execution completed")
 
             // Return product with its associated variants
             product.copy(variants = variants)

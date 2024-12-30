@@ -114,13 +114,6 @@ sl-button::part(base) {
     margin-bottom: 1.5rem;
 }
 
-.variant-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-}
-
 .variant-form-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
